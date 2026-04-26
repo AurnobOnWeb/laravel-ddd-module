@@ -10,6 +10,7 @@ final class Module
 {
     /**
      * @param  array<int, string>  $providers
+     * @param  array<int, string>  $features
      * @param  array<string, string>  $paths
      * @param  array<string, mixed>  $metadata
      */
@@ -20,6 +21,7 @@ final class Module
         private readonly string $namespace,
         private readonly bool $enabled,
         private readonly array $providers,
+        private readonly array $features,
         private readonly array $paths,
         private readonly array $metadata,
         private readonly int $priority = 0,
@@ -62,6 +64,19 @@ final class Module
     public function providers(): array
     {
         return $this->providers;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function features(): array
+    {
+        return $this->features;
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        return in_array(strtolower($feature), array_map('strtolower', $this->features), true);
     }
 
     /**

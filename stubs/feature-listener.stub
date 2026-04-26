@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ listener_namespace }};
+
+use {{ event_namespace }}\{{ event_class }};
+
+final class {{ listener_class }}
+{
+    public function handle({{ event_class }} $event): void
+    {
+        unset($event);
+
+        // Update projections, publish messages, or trigger integrations here.
+    }
+}

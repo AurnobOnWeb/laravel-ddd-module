@@ -10,7 +10,11 @@ use RuntimeException;
 
 final class MakeModuleCommand extends Command
 {
-    protected $signature = 'modular:make {name : The module name} {--force : Overwrite existing files if the module already exists}';
+    protected $signature = 'modular:make
+        {name : The module name}
+        {--force : Overwrite existing files if the module already exists}
+        {--feature=* : Enable module features such as api, permissions, media, events, jobs, observers, policies, and testing}
+        {--without-feature=* : Disable configured default features for this generation run}';
 
     protected $description = 'Generate a DDD module with the configured architecture.';
 
@@ -26,6 +30,8 @@ final class MakeModuleCommand extends Command
             $files = $this->generator->generate(
                 (string) $this->argument('name'),
                 (bool) $this->option('force'),
+                (array) $this->option('feature'),
+                (array) $this->option('without-feature'),
             );
         } catch (RuntimeException $exception) {
             $this->error($exception->getMessage());

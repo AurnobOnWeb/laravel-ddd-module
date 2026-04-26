@@ -5,6 +5,15 @@ declare(strict_types=1);
 namespace Aurnob\LaravelDddModular;
 
 use Aurnob\LaravelDddModular\Commands\MakeModuleCommand;
+use Aurnob\LaravelDddModular\Features\ApiFeature;
+use Aurnob\LaravelDddModular\Features\EventFeature;
+use Aurnob\LaravelDddModular\Features\FeatureManager;
+use Aurnob\LaravelDddModular\Features\JobFeature;
+use Aurnob\LaravelDddModular\Features\MediaFeature;
+use Aurnob\LaravelDddModular\Features\ObserverFeature;
+use Aurnob\LaravelDddModular\Features\PermissionFeature;
+use Aurnob\LaravelDddModular\Features\PolicyFeature;
+use Aurnob\LaravelDddModular\Features\TestingFeature;
 use Aurnob\LaravelDddModular\Contracts\ModuleRegistry as ModuleRegistryContract;
 use Aurnob\LaravelDddModular\Contracts\StubRenderer as StubRendererContract;
 use Aurnob\LaravelDddModular\Generation\ModuleGenerator;
@@ -99,6 +108,22 @@ final class LaravelDddModularServiceProvider extends ServiceProvider
             ]);
         });
 
+        $this->app->singleton(FeatureManager::class, function ($app): FeatureManager {
+            return new FeatureManager(
+                $app['config'],
+                [
+                    new ApiFeature($app['config']),
+                    new PermissionFeature($app['config']),
+                    new MediaFeature($app['config']),
+                    new EventFeature($app['config']),
+                    new JobFeature($app['config']),
+                    new ObserverFeature($app['config']),
+                    new PolicyFeature($app['config']),
+                    new TestingFeature($app['config']),
+                ],
+            );
+        });
+
         $this->app->singleton(ModuleFinder::class, fn ($app): ModuleFinder => new ModuleFinder(
             $app->make(Filesystem::class),
             $app['config'],
@@ -123,6 +148,7 @@ final class LaravelDddModularServiceProvider extends ServiceProvider
             $app->make(StubRepository::class),
             $app->make(StubRendererContract::class),
             $app->make(IntegrationManager::class),
+            $app->make(FeatureManager::class),
         ));
     }
 }

@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ media_namespace }};
+
+final class {{ media_class }}
+{
+    public const DEFAULT = 'default';
+    public const GALLERY = 'gallery';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function collections(): array
+    {
+        return [
+            self::DEFAULT,
+            self::GALLERY,
+        ];
+    }
+}

@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ api_controller_namespace }};
+
+use {{ action_namespace }}\{{ action_class }};
+use {{ data_namespace }}\{{ data_class }};
+use {{ model_namespace }}\{{ model_class }};
+use {{ request_namespace }}\{{ request_class }};
+use {{ resource_namespace }}\{{ resource_class }};
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+final class {{ api_controller_class }} extends Controller
+{
+    public function index(): AnonymousResourceCollection
+    {
+        return {{ resource_class }}::collection(
+            {{ model_class }}::query()->latest()->paginate()
+        );
+    }
+
+    public function store({{ request_class }} $request, {{ action_class }} $action): {{ resource_class }}
+    {
+        $model = $action->execute({{ data_class }}::from($request->validated()));
+
+        return new {{ resource_class }}($model);
+    }
+}

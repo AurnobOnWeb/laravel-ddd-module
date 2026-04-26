@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ policy_namespace }};
+
+use {{ model_namespace }}\{{ model_class }};
+use App\Models\User;
+
+final class {{ policy_class }}
+{
+    public function viewAny(User $user): bool
+    {
+        return $user !== null;
+    }
+
+    public function view(User $user, {{ model_class }} $model): bool
+    {
+        unset($model);
+
+        return $user !== null;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user !== null;
+    }
+
+    public function update(User $user, {{ model_class }} $model): bool
+    {
+        unset($model);
+
+        return $user !== null;
+    }
+
+    public function delete(User $user, {{ model_class }} $model): bool
+    {
+        unset($model);
+
+        return $user !== null;
+    }
+}

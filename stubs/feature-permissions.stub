@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ permissions_namespace }};
+
+final class {{ permissions_class }}
+{
+    public const VIEW_ANY = '{{ module_slug }}.view-any';
+    public const VIEW = '{{ module_slug }}.view';
+    public const CREATE = '{{ module_slug }}.create';
+    public const UPDATE = '{{ module_slug }}.update';
+    public const DELETE = '{{ module_slug }}.delete';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function all(): array
+    {
+        return [
+            self::VIEW_ANY,
+            self::VIEW,
+            self::CREATE,
+            self::UPDATE,
+            self::DELETE,
+        ];
+    }
+}

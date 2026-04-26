@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use {{ api_controller_namespace }}\{{ api_controller_class }};
+
+Route::middleware({{ api_route_middleware }})
+    ->prefix('{{ api_route_uri_prefix }}')
+    ->name('{{ api_route_name_prefix }}')
+    ->group(function (): void {
+        Route::get('/', [{{ api_controller_class }}::class, 'index'])->name('index');
+        Route::post('/', [{{ api_controller_class }}::class, 'store'])->name('store');
+    });

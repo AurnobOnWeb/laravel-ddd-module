@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ module_test_feature_namespace }};
+
+use Tests\TestCase;
+
+final class {{ module_test_feature_class }} extends TestCase
+{
+    public function test_api_preset_requires_project_specific_assertions(): void
+    {
+        $this->markTestSkipped('Wire this module test into your application test suite and assert the API contract.');
+    }
+}

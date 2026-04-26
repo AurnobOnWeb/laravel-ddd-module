@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ media_action_namespace }};
+
+use {{ media_namespace }}\{{ media_class }};
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
+
+final class {{ media_action_class }}
+{
+    public function execute(Model $model, UploadedFile $file, string $collection = {{ media_class }}::DEFAULT): void
+    {
+        unset($model, $file, $collection);
+
+        // Integrate this action with your chosen media layer.
+    }
+}

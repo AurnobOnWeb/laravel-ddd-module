@@ -10,7 +10,9 @@ final class ModuleDiscoveryTest extends TestCase
 {
     public function test_it_discovers_modules_from_the_modules_directory(): void
     {
-        $this->createModule('Blog');
+        $this->createModule('Blog', [
+            'features' => ['api', 'testing'],
+        ]);
 
         $registry = $this->app->make(ModuleRegistry::class);
         $registry->refresh();
@@ -22,5 +24,7 @@ final class ModuleDiscoveryTest extends TestCase
         self::assertSame('blog', $module->slug());
         self::assertSame($this->modulesPath.DIRECTORY_SEPARATOR.'Blog', $module->basePath());
         self::assertSame('Modules\\Blog', $module->namespace());
+        self::assertTrue($module->hasFeature('api'));
+        self::assertTrue($module->hasFeature('testing'));
     }
 }

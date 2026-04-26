@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ module_test_unit_namespace }};
+
+use PHPUnit\Framework\TestCase;
+
+final class {{ module_test_unit_class }} extends TestCase
+{
+    public function test_action_preset_requires_project_specific_assertions(): void
+    {
+        $this->markTestSkipped('Replace this preset with assertions for your module action behavior.');
+    }
+}

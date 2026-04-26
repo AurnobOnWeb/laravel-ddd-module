@@ -10,5 +10,8 @@ namespace {{ action_namespace }};
 {
     public function execute({{ data_class }} $data): {{ model_class }}
     {
-{{ action_payload }}    }
+{{ action_payload }}{{ action_after_create }}
+
+        return $model;
+    }
 }

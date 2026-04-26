@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ event_namespace }};
+
+use {{ model_namespace }}\{{ model_class }};
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+final class {{ event_class }}
+{
+    use Dispatchable;
+    use SerializesModels;
+
+    public function __construct(
+        public readonly {{ model_class }} $model,
+    ) {
+    }
+}

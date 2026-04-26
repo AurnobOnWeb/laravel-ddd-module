@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ observer_namespace }};
+
+use {{ model_namespace }}\{{ model_class }};
+
+final class {{ observer_class }}
+{
+    public function created({{ model_class }} $model): void
+    {
+        unset($model);
+    }
+
+    public function updated({{ model_class }} $model): void
+    {
+        unset($model);
+    }
+}

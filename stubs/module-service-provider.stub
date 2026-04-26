@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace {{ provider_namespace }};
 
 use Aurnob\LaravelDddModular\Support\ModuleServiceProvider;
+{{ provider_imports }}
 
 final class {{ provider_class }} extends ModuleServiceProvider
 {
@@ -12,11 +13,11 @@ final class {{ provider_class }} extends ModuleServiceProvider
 
     public function register(): void
     {
-        //
+{{ provider_register_body }}
     }
 
     public function boot(): void
     {
-        //
+{{ provider_boot_body }}
     }
 }

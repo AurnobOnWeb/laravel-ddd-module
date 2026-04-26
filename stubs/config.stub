@@ -5,5 +5,6 @@ declare(strict_types=1);
 return [
     'name' => '{{ module }}',
     'slug' => '{{ module_slug }}',
+    'features' => {{ module_features_php }},
     'views' => '{{ view_namespace }}',
 ];

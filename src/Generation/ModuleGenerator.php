@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Aurnob\LaravelDddModular\Generation;
 
 use Aurnob\LaravelDddModular\Contracts\StubRenderer;
+use Aurnob\LaravelDddModular\Features\FeatureManager;
 use Aurnob\LaravelDddModular\Integration\IntegrationManager;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 final class ModuleGenerator
@@ -19,14 +19,21 @@ final class ModuleGenerator
         private readonly StubRepository $stubs,
         private readonly StubRenderer $renderer,
         private readonly IntegrationManager $integrations,
+        private readonly FeatureManager $features,
     ) {
     }
 
     /**
+     * @param  array<int, string>  $requestedFeatures
+     * @param  array<int, string>  $excludedFeatures
      * @return array<int, string>
      */
-    public function generate(string $name, bool $force = false): array
-    {
+    public function generate(
+        string $name,
+        bool $force = false,
+        array $requestedFeatures = [],
+        array $excludedFeatures = [],
+    ): array {
         $blueprint = ModuleBlueprint::from(
             $name,
             (string) $this->config->get('modular.modules.namespace', 'Modules'),
@@ -37,13 +44,21 @@ final class ModuleGenerator
             throw new RuntimeException(sprintf('Module [%s] already exists at [%s].', $blueprint->name, $blueprint->basePath));
         }
 
+        $selectedFeatures = $this->features->resolve($requestedFeatures, $excludedFeatures);
         $this->files->ensureDirectoryExists($blueprint->basePath);
+        $directories = (array) $this->config->get('modular.modules.default_folders', []);
 
-        foreach ((array) $this->config->get('modular.modules.default_folders', []) as $folder) {
+        foreach ($this->features->contributions($blueprint, $selectedFeatures, [
+            'phase' => 'directories',
+        ]) as $contribution) {
+            $directories = array_merge($directories, $contribution->directories());
+        }
+
+        foreach (array_values(array_unique($directories)) as $folder) {
             $this->files->ensureDirectoryExists($blueprint->path($folder));
         }
 
-        $files = $this->buildFiles($blueprint);
+        $files = $this->buildFiles($blueprint, $selectedFeatures);
 
         foreach ($files as $file) {
             $directory = dirname($file->path());
@@ -58,9 +73,10 @@ final class ModuleGenerator
     }
 
     /**
+     * @param  array<int, string>  $selectedFeatures
      * @return array<int, GeneratedFile>
      */
-    private function buildFiles(ModuleBlueprint $blueprint): array
+    private function buildFiles(ModuleBlueprint $blueprint, array $selectedFeatures): array
     {
         $usesSpatieData = $this->integrations->isActive('spatie_data');
         $usesViewModels = $this->integrations->isActive('spatie_view_models');
@@ -69,15 +85,44 @@ final class ModuleGenerator
         $timestamp = now()->format('Y_m_d_His');
         $translationTimestamp = now()->addSecond()->format('Y_m_d_His');
         $viewNamespace = $this->viewNamespaceFor($blueprint);
+        $featureContributions = $this->features->contributions($blueprint, $selectedFeatures, [
+            'uses_spatie_data' => $usesSpatieData,
+            'uses_spatie_view_models' => $usesViewModels,
+            'uses_astrotomic_translatable' => $usesTranslatable,
+        ]);
 
-        $common = [
+        $providerImports = [];
+        $providerRegisterStatements = [];
+        $providerBootStatements = [];
+        $actionImports = [];
+        $actionAfterStatements = [];
+        $featureReplacements = [];
+        $featureManifest = [];
+
+        foreach ($featureContributions as $contribution) {
+            $providerImports = array_merge($providerImports, $contribution->providerImports());
+            $providerRegisterStatements = array_merge($providerRegisterStatements, $contribution->providerRegisterStatements());
+            $providerBootStatements = array_merge($providerBootStatements, $contribution->providerBootStatements());
+            $actionImports = array_merge($actionImports, $contribution->actionImports());
+            $actionAfterStatements = array_merge($actionAfterStatements, $contribution->actionAfterStatements());
+            $featureReplacements = array_merge($featureReplacements, $contribution->replacements());
+            $featureManifest = array_replace_recursive($featureManifest, $contribution->manifest());
+        }
+
+        $common = array_merge([
             'module' => $blueprint->name,
             'module_slug' => $blueprint->slug,
             'module_description' => $blueprint->name.' module.',
             'module_namespace' => $blueprint->namespace,
             'module_provider_fqcn' => $blueprint->providerFqcn(),
+            'module_features_json' => $this->jsonList($selectedFeatures, 4),
+            'module_features_php' => $this->phpList($selectedFeatures, 4),
+            'module_feature_manifest_json' => $this->jsonObject($featureManifest, 4),
             'provider_namespace' => $blueprint->providerNamespace(),
             'provider_class' => $blueprint->providerClass(),
+            'provider_imports' => $this->renderImports($providerImports),
+            'provider_register_body' => $this->renderStatements($providerRegisterStatements),
+            'provider_boot_body' => $this->renderStatements($providerBootStatements),
             'controller_namespace' => $blueprint->namespace.'\\Presentation\\Http\\Controllers',
             'controller_class' => $blueprint->controllerClass(),
             'model_namespace' => $blueprint->namespace.'\\Domain\\Models',
@@ -110,17 +155,18 @@ final class ModuleGenerator
                 'use App\\Http\\Controllers\\Controller;',
             ])),
             'index_body' => "        return view('".$viewNamespace."::index', new ".$blueprint->viewModelClass()."('".$blueprint->name."'));\n",
-            'store_body' => $usesTranslatable
-                ? "        \$action->execute(".$blueprint->dataClass()."::from(\$request->validated()));\n\n        return redirect()->route('".$blueprint->slug.".index');\n"
-                : "        \$action->execute(".$blueprint->dataClass()."::from(\$request->validated()));\n\n        return redirect()->route('".$blueprint->slug.".index');\n",
+            'store_body' => "        \$action->execute(".$blueprint->dataClass()."::from(\$request->validated()));\n\n        return redirect()->route('".$blueprint->slug.".index');\n",
             'action_use_data' => 'use '.$blueprint->namespace.'\\Application\\Data\\'.$blueprint->dataClass().';',
             'action_use_model' => 'use '.$blueprint->namespace.'\\Domain\\Models\\'.$blueprint->modelClass().';',
             'action_payload' => $usesTranslatable
-                ? "        return {$blueprint->modelClass()}::query()->create([\n            'slug' => Str::slug(\$data->title),\n            app()->getLocale() => [\n                'title' => \$data->title,\n                'body' => \$data->body,\n            ],\n        ]);\n"
-                : "        return {$blueprint->modelClass()}::query()->create(\$data->toArray());\n",
-            'action_extra_imports' => $usesTranslatable ? "use Illuminate\\Support\\Str;\n" : '',
+                ? "        \$model = {$blueprint->modelClass()}::query()->create([\n            'slug' => Str::slug(\$data->title),\n            app()->getLocale() => [\n                'title' => \$data->title,\n                'body' => \$data->body,\n            ],\n        ]);\n"
+                : "        \$model = {$blueprint->modelClass()}::query()->create(\$data->toArray());\n",
+            'action_extra_imports' => $this->renderImports(array_merge(
+                $usesTranslatable ? ['use Illuminate\\Support\\Str;'] : [],
+                $actionImports,
+            )),
+            'action_after_create' => $this->renderStatements($actionAfterStatements, '        ', ''),
             'view_model_base_import' => $usesViewModels ? 'use Spatie\\ViewModels\\ViewModel;' : 'use Illuminate\\Contracts\\Support\\Arrayable;',
-            'view_model_base_class' => $usesViewModels ? 'extends ViewModel' : 'implements Arrayable',
             'view_model_class_declaration' => $usesViewModels
                 ? 'final class '.$blueprint->viewModelClass().' extends ViewModel'
                 : 'final readonly class '.$blueprint->viewModelClass().' implements Arrayable',
@@ -134,7 +180,7 @@ final class ModuleGenerator
             'data_body' => $usesSpatieData
                 ? "    public function __construct(\n        public string \$title,\n        public ?string \$body = null,\n    ) {\n    }\n"
                 : "    public function __construct(\n        public string \$title,\n        public ?string \$body = null,\n    ) {\n    }\n\n    public static function from(array \$payload): self\n    {\n        return new self(\n            title: (string) (\$payload['title'] ?? ''),\n            body: isset(\$payload['body']) ? (string) \$payload['body'] : null,\n        );\n    }\n\n    public function toArray(): array\n    {\n        return [\n            'title' => \$this->title,\n            'body' => \$this->body,\n        ];\n    }\n",
-        ];
+        ], $featureReplacements);
 
         $files = [
             new GeneratedFile(
@@ -211,9 +257,21 @@ final class ModuleGenerator
             );
         }
 
+        foreach ($featureContributions as $contribution) {
+            foreach ($contribution->files() as $featureFile) {
+                $files[] = new GeneratedFile(
+                    $blueprint->path($featureFile->path()),
+                    $this->render($featureFile->stub(), array_merge($common, $featureFile->replacements())),
+                );
+            }
+        }
+
         return $files;
     }
 
+    /**
+     * @param  array<string, scalar>  $replacements
+     */
     private function render(string $stub, array $replacements): string
     {
         return $this->renderer->render(
@@ -232,5 +290,102 @@ final class ModuleGenerator
             'prefix' => trim((string) ($prefix ?: 'modules').'.'.$blueprint->slug, '.'),
             default => $blueprint->slug,
         };
+    }
+
+    /**
+     * @param  array<int, string>  $imports
+     */
+    private function renderImports(array $imports): string
+    {
+        $imports = array_values(array_unique(array_filter(array_map('trim', $imports))));
+
+        if ($imports === []) {
+            return '';
+        }
+
+        return implode("\n", $imports)."\n";
+    }
+
+    /**
+     * @param  array<int, string>  $statements
+     */
+    private function renderStatements(array $statements, string $indent = '        ', string $fallback = '        //'): string
+    {
+        $statements = array_values(array_unique(array_filter(array_map('trim', $statements))));
+
+        if ($statements === []) {
+            return $fallback;
+        }
+
+        return implode("\n", array_map(
+            static fn (string $statement): string => $indent.$statement,
+            $statements,
+        ));
+    }
+
+    /**
+     * @param  array<int, string>  $items
+     */
+    private function jsonList(array $items, int $indentSpaces = 0): string
+    {
+        if ($items === []) {
+            return '[]';
+        }
+
+        return $this->indentMultiline(
+            (string) json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            $indentSpaces,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function jsonObject(array $payload, int $indentSpaces = 0): string
+    {
+        if ($payload === []) {
+            return '{}';
+        }
+
+        return $this->indentMultiline(
+            (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            $indentSpaces,
+        );
+    }
+
+    /**
+     * @param  array<int, string>  $items
+     */
+    private function phpList(array $items, int $indentSpaces = 0): string
+    {
+        if ($items === []) {
+            return '[]';
+        }
+
+        $lines = ['['];
+
+        foreach ($items as $item) {
+            $lines[] = '    '.var_export($item, true).',';
+        }
+
+        $lines[] = ']';
+
+        return $this->indentMultiline(implode("\n", $lines), $indentSpaces);
+    }
+
+    private function indentMultiline(string $value, int $indentSpaces): string
+    {
+        if ($indentSpaces <= 0) {
+            return $value;
+        }
+
+        $indent = str_repeat(' ', $indentSpaces);
+        $lines = explode("\n", $value);
+
+        return implode("\n", array_map(
+            static fn (string $line, int $index): string => $index === 0 ? $line : $indent.$line,
+            $lines,
+            array_keys($lines),
+        ));
     }
 }

@@ -4,6 +4,7 @@
     "description": "{{ module_description }}",
     "enabled": true,
     "namespace": "{{ module_namespace }}",
+    "features": {{ module_features_json }},
     "providers": [
         "{{ module_provider_fqcn }}"
     ],
@@ -14,5 +15,6 @@
         "translations": "lang",
         "config": "config"
     },
+    "feature_manifest": {{ module_feature_manifest_json }},
     "priority": 0
 }

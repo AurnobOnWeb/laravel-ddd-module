@@ -10,6 +10,7 @@ final class ModuleManifest
 {
     /**
      * @param  array<int, string>  $providers
+     * @param  array<int, string>  $features
      * @param  array<string, string>  $paths
      * @param  array<string, mixed>  $metadata
      */
@@ -19,6 +20,7 @@ final class ModuleManifest
         private readonly string $namespace,
         private readonly bool $enabled,
         private readonly array $providers,
+        private readonly array $features,
         private readonly array $paths,
         private readonly array $metadata,
         private readonly int $priority,
@@ -46,6 +48,7 @@ final class ModuleManifest
         $providers = array_values((array) ($data['providers'] ?? [
             $namespace.'\\Infrastructure\\Providers\\'.$studlyName.'ServiceProvider',
         ]));
+        $features = array_values(array_map('strval', (array) ($data['features'] ?? [])));
 
         return new self(
             $name,
@@ -53,6 +56,7 @@ final class ModuleManifest
             $namespace,
             (bool) ($data['enabled'] ?? true),
             $providers,
+            $features,
             $paths,
             $data,
             (int) ($data['priority'] ?? 0),
@@ -68,6 +72,7 @@ final class ModuleManifest
             $this->namespace,
             $this->enabled,
             $this->providers,
+            $this->features,
             $this->paths,
             $this->metadata,
             $this->priority,

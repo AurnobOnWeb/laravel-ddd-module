@@ -67,6 +67,32 @@ return [
         'path' => null,
     ],
 
+    'features' => [
+        'defaults' => [],
+        'available' => [
+            'api',
+            'permissions',
+            'media',
+            'events',
+            'jobs',
+            'observers',
+            'policies',
+            'testing',
+        ],
+        'api' => [
+            'routes_path' => 'routes/api.php',
+            'route_name_prefix' => 'api.',
+            'uri_prefix' => 'api',
+            'middleware' => [
+                'api',
+                'auth:sanctum',
+            ],
+        ],
+        'testing' => [
+            'path' => 'tests',
+        ],
+    ],
+
     'integrations' => [
         'spatie_data' => true,
         'spatie_view_models' => true,
