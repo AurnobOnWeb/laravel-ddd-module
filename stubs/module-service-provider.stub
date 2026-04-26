@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ provider_namespace }};
+
+use Aurnob\LaravelDddModular\Support\ModuleServiceProvider;
+
+final class {{ provider_class }} extends ModuleServiceProvider
+{
+    protected string $moduleName = '{{ module }}';
+
+    public function register(): void
+    {
+        //
+    }
+
+    public function boot(): void
+    {
+        //
+    }
+}

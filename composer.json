@@ -1,0 +1,51 @@
+{
+    "name": "aurnob/laravel-ddd-modular",
+    "description": "Opinionated modular architecture for Laravel with DDD conventions, DTOs, view models, and optional integrations.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "modules",
+        "ddd",
+        "modular",
+        "package"
+    ],
+    "require": {
+        "php": "^8.2|^8.3|^8.4|^8.5",
+        "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/filesystem": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0"
+    },
+    "suggest": {
+        "nwidart/laravel-modules": "For teams already using the Modules directory convention.",
+        "spatie/laravel-data": "To generate Spatie Data-based DTOs.",
+        "spatie/laravel-view-models": "To generate Spatie ViewModels.",
+        "astrotomic/laravel-translatable": "To scaffold translatable module models.",
+        "mcamara/laravel-localization": "To localize discovered module routes."
+    },
+    "autoload": {
+        "psr-4": {
+            "Aurnob\\LaravelDddModular\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aurnob\\LaravelDddModular\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aurnob\\LaravelDddModular\\LaravelDddModularServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

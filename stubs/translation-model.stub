@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ translation_model_namespace }};
+
+use Illuminate\Database\Eloquent\Model;
+
+final class {{ translation_model_class }} extends Model
+{
+    public $timestamps = false;
+
+    protected $fillable = [
+        'title',
+        'body',
+    ];
+}

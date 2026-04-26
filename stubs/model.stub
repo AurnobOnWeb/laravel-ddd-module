@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model_namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+final class {{ model_class }} extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'body',
+    ];
+}

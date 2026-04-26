@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use {{ controller_namespace }}\{{ controller_class }};
+
+Route::middleware('web')
+    ->prefix('{{ route_prefix }}')
+    ->name('{{ module_slug }}.')
+    ->group(function (): void {
+        Route::get('/', [{{ controller_class }}::class, 'index'])->name('index');
+        Route::post('/', [{{ controller_class }}::class, 'store'])->name('store');
+    });

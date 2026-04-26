@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ controller_namespace }};
+
+{{ controller_uses }}
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+
+final class {{ controller_class }} extends Controller
+{
+    public function index(): View
+    {
+{{ index_body }}    }
+
+    public function store({{ request_class }} $request, {{ action_class }} $action): RedirectResponse
+    {
+{{ store_body }}    }
+}

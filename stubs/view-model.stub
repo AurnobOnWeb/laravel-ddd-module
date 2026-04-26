@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ view_model_namespace }};
+
+{{ view_model_base_import }}
+
+{{ view_model_class_declaration }}
+{
+{{ view_model_body }}}
