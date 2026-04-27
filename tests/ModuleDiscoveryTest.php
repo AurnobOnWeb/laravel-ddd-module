@@ -27,4 +27,23 @@ final class ModuleDiscoveryTest extends TestCase
         self::assertTrue($module->hasFeature('api'));
         self::assertTrue($module->hasFeature('testing'));
     }
+
+    public function test_it_discovers_nested_modules_within_configured_scan_depth(): void
+    {
+        $this->app['config']->set('modular.discovery.scan_depth', 2);
+
+        $modulePath = $this->createModule('Blog');
+        $nestedPath = $this->modulesPath.DIRECTORY_SEPARATOR.'Content'.DIRECTORY_SEPARATOR.'Blog';
+
+        $this->files->ensureDirectoryExists(dirname($nestedPath));
+        $this->files->moveDirectory($modulePath, $nestedPath);
+
+        $registry = $this->app->make(ModuleRegistry::class);
+        $registry->refresh();
+
+        $module = $registry->find('Blog');
+
+        self::assertNotNull($module);
+        self::assertSame($nestedPath, $module->basePath());
+    }
 }

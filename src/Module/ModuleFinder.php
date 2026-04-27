@@ -64,16 +64,26 @@ final class ModuleFinder
      */
     private function candidateDirectories(string $modulesPath, int $scanDepth): array
     {
-        $directories = array_unique(array_merge(
-            $this->files->directories($modulesPath),
-            $this->files->allDirectories($modulesPath),
-        ));
+        $directories = [];
 
-        return array_values(array_filter($directories, static function (string $directory) use ($modulesPath, $scanDepth): bool {
-            $relative = ltrim(substr($directory, strlen(rtrim($modulesPath, DIRECTORY_SEPARATOR))), DIRECTORY_SEPARATOR);
-            $depth = substr_count($relative, DIRECTORY_SEPARATOR) + 1;
+        $this->scanDirectories($modulesPath, $scanDepth, 1, $directories);
 
-            return $depth <= $scanDepth;
-        }));
+        return $directories;
+    }
+
+    /**
+     * @param  array<int, string>  $directories
+     */
+    private function scanDirectories(string $path, int $scanDepth, int $depth, array &$directories): void
+    {
+        foreach ($this->files->directories($path) as $directory) {
+            $directories[] = $directory;
+
+            if ($depth >= $scanDepth) {
+                continue;
+            }
+
+            $this->scanDirectories($directory, $scanDepth, $depth + 1, $directories);
+        }
     }
 }

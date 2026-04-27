@@ -717,12 +717,27 @@ This package currently includes tests for:
 - view namespace behavior
 - base command generation
 - feature-driven command generation
+- cross-version fixture validation against Laravel 10, 11, 12, and 13
 
 To run tests locally after installing dependencies:
 
 ```bash
 composer test
 ```
+
+To rerun the real Laravel fixture matrix used during compatibility verification:
+
+```bash
+scripts/run-fixture-matrix.sh host
+```
+
+If Docker is available and the fixture workspace exists at `../laravel-ddd-modular-fixtures`, you can run the Docker matrix too:
+
+```bash
+scripts/run-fixture-matrix.sh docker
+```
+
+The committed runner expects the fixture applications to live in `/home/aurnob/www/laravel-ddd-modular-fixtures` by default, but you can override that path with `FIXTURE_ROOT=/custom/path`.
 
 ## Summary
 

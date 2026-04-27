@@ -1,12 +1,12 @@
 {
-    "name": "{{ module }}",
-    "slug": "{{ module_slug }}",
-    "description": "{{ module_description }}",
+    "name": {{ module_json_name }},
+    "slug": {{ module_json_slug }},
+    "description": {{ module_json_description }},
     "enabled": true,
-    "namespace": "{{ module_namespace }}",
+    "namespace": {{ module_json_namespace }},
     "features": {{ module_features_json }},
     "providers": [
-        "{{ module_provider_fqcn }}"
+        {{ module_json_provider_fqcn }}
     ],
     "paths": {
         "routes": "routes",

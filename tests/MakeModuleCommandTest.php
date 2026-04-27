@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Aurnob\LaravelDddModular\Tests;
 
+use JsonException;
+
 final class MakeModuleCommandTest extends TestCase
 {
+    /**
+     * @throws JsonException
+     */
     public function test_it_generates_the_opinionated_module_structure(): void
     {
         $this->app['config']->set('modular.modules.namespace', 'Company\\Modules');
@@ -27,6 +32,13 @@ final class MakeModuleCommandTest extends TestCase
 
         self::assertIsString($manifest);
         self::assertStringContainsString('Company\\\\Modules\\\\Blog', $manifest);
+
+        $decoded = json_decode($manifest, true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame('Company\\Modules\\Blog', $decoded['namespace']);
+        self::assertSame([
+            'Company\\Modules\\Blog\\Infrastructure\\Providers\\BlogServiceProvider',
+        ], $decoded['providers']);
     }
 
     public function test_it_generates_selected_module_features(): void

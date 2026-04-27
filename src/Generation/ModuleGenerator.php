@@ -111,10 +111,15 @@ final class ModuleGenerator
 
         $common = array_merge([
             'module' => $blueprint->name,
+            'module_json_name' => $this->jsonString($blueprint->name),
             'module_slug' => $blueprint->slug,
+            'module_json_slug' => $this->jsonString($blueprint->slug),
             'module_description' => $blueprint->name.' module.',
+            'module_json_description' => $this->jsonString($blueprint->name.' module.'),
             'module_namespace' => $blueprint->namespace,
+            'module_json_namespace' => $this->jsonString($blueprint->namespace),
             'module_provider_fqcn' => $blueprint->providerFqcn(),
+            'module_json_provider_fqcn' => $this->jsonString($blueprint->providerFqcn()),
             'module_features_json' => $this->jsonList($selectedFeatures, 4),
             'module_features_php' => $this->phpList($selectedFeatures, 4),
             'module_feature_manifest_json' => $this->jsonObject($featureManifest, 4),
@@ -351,6 +356,11 @@ final class ModuleGenerator
             (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
             $indentSpaces,
         );
+    }
+
+    private function jsonString(string $value): string
+    {
+        return (string) json_encode($value, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     }
 
     /**
